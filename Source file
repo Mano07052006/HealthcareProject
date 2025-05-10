@@ -19,6 +19,7 @@ print("Duplicates:", df.duplicated().sum())
 # 5. Visualize a Few Features
 import matplotlib.pyplot as plt
 import seaborn as sns
+
 plt.figure(figsize=(10,5))
 sns.countplot(y='Description', data=df)
 plt.title('Symptom Descriptions Distribution')
@@ -27,10 +28,11 @@ plt.show()
 # 6. Identify Target and Features
 # Example: Replace 'Disease' with your actual target column name
 X = df['Description']
-# y = df['Disease']  # Uncomment and replace if target exists
+y = df['Disease']  # Uncomment and replace if target exists
 
-# 7. Convert Categorical Columns to Numerical
- y = y.astype('category').cat.codes  #Uncomment if applicable
+#7
+for col in df.select_dtypes(include='object').columns:
+      df[col] = df[col].astype('category').cat.codes
 
 # 8. One-Hot Encoding
 X = pd.get_dummies(X)
@@ -41,17 +43,18 @@ from sklearn.preprocessing import StandardScaler
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
-# 10. Train-Test Split
+#10
 from sklearn.model_selection import train_test_split
 
-# Replace y with actual target
-# X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+# Replace 'X_scaled' with your actual feature set, and 'y' with your actual target variable
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
 
-# 11. Model Building
+#11
 from sklearn.ensemble import RandomForestClassifier
 
-# model = RandomForestClassifier()
-# model.fit(X_train, y_train)
+# Create and train the model
+model = RandomForestClassifier(random_state=42)
+model.fit(X_train, y_train)
 
 # 12. Evaluation
 from sklearn.metrics import accuracy_score, classification_report
@@ -60,8 +63,10 @@ from sklearn.metrics import accuracy_score, classification_report
 # print("Accuracy:", accuracy_score(y_test, y_pred))
 # print(classification_report(y_test, y_pred))
 
+
 # 13. Make Predictions from New Input
 new_input = ['sore throat']
+
 
 # 14. Convert to DataFrame and Encode
 new_df = pd.DataFrame(new_input, columns=['Description'])
@@ -69,7 +74,8 @@ new_df_encoded = pd.get_dummies(new_df)
 new_df_encoded = new_df_encoded.reindex(columns=X.columns, fill_value=0)
 new_scaled = scaler.transform(new_df_encoded)
 
-# 15. Predict the Final Grade
+
+# 15. Predict the Final GradeGrade
 # prediction = model.predict(new_scaled)
 # print("Predicted class:", prediction[0])
 
@@ -79,6 +85,7 @@ import gradio as gr
 
 # 17. Create a Prediction Function
 def predict_symptom(symptom):
+
     df_input = pd.DataFrame([symptom], columns=['Description'])
     df_input = pd.get_dummies(df_input)
     df_input = df_input.reindex(columns=X.columns, fill_value=0)
@@ -91,3 +98,4 @@ interface = gr.Interface(fn=predict_symptom,
                          inputs=gr.Textbox(label="Enter Symptom"),
                          outputs="text")
 interface.launch()
+
